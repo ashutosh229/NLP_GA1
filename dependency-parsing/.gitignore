@@ -1,3 +1,13 @@
+# Venv
 venv/
+
+# Datasets
 UD_English-EWT/ 
+
+# Model checkpoints
 *.pkl
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
