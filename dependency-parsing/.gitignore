@@ -1,2 +1,3 @@
 venv/
-UD_English-EWT/
+UD_English-EWT/ 
+*.pkl
