@@ -22,6 +22,13 @@ def ensure_brown_downloaded():
     except LookupError:
         nltk.download("brown", quiet=True)
 
+def clean_token(token: str):
+    """
+    Lowercase a token and keep it only if it is a purely alphabetic word.
+    Punctuation-only tokens (Brown corpus has many, e.g. '.', ',', '``')
+    are filtered out upstream by the caller.
+    """
+    return token.lower()
 
 def is_alpha_word(token: str) -> bool:
     return token.isalpha()
