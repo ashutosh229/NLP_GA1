@@ -93,3 +93,35 @@ class SpellingCorrector:
         changed = best_word != word and (best_score - original_score) > log_margin
         return (best_word, True) if changed else (word, False)
 
+    # Whole-sentence wrapper (used by CLI and evaluation)
+    def correct_sentence(self, tokens):
+        """
+        tokens: list[str] (already tokenized, case as typed).
+        Returns list of (original_token, corrected_token, was_changed).
+        Non-alphabetic tokens (punctuation) are passed through unchanged.
+        """
+        results = []
+        lowered = [t.lower() for t in tokens]
+
+        for i, tok in enumerate(tokens):
+            low = lowered[i]
+            if not low.isalpha():
+                results.append((tok, tok, False))
+                continue
+
+            if low not in self.vocab:
+                corrected, _ = self.correct_nonword(low)
+                changed = corrected != low
+            else:
+                prev_w = lowered[i - 1] if i > 0 and lowered[i - 1].isalpha() else None
+                next_w = lowered[i + 1] if i + 1 < len(lowered) and lowered[i + 1].isalpha() else None
+                corrected, changed = self.correct_realword(prev_w, low, next_w)
+
+            if not changed:
+                corrected = tok
+            elif tok[0].isupper():
+                corrected = corrected.capitalize()
+
+            results.append((tok, corrected, changed))
+
+        return results
