@@ -62,4 +62,46 @@ def load_or_build_model():
     return model
 
 
+def run_cli():
+    model = load_or_build_model()
+    corrector = SpellingCorrector(model)
+    use_color = os.isatty(1) if hasattr(os, "isatty") else False
 
+    print("\n=== Spelling Corrector — Interactive CLI ===")
+    print("Type a sentence and press Enter to correct it.")
+    print("Type 'exit' to quit.\n")
+
+    while True:
+        try:
+            sentence = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting.")
+            break
+
+        if sentence.lower() == "exit":
+            print("Goodbye!")
+            break
+        if not sentence:
+            continue
+
+        tokens = tokenize_preserving_punctuation(sentence)
+
+        t0 = time.perf_counter()
+        results = corrector.correct_sentence(tokens)
+        latency_ms = (time.perf_counter() - t0) * 1000
+
+        display_tokens = [
+            highlight(corrected, use_color) if changed else corrected
+            for (_orig, corrected, changed) in results
+        ]
+        corrected_sentence = detokenize(display_tokens)
+        any_changed = any(changed for (_o, _c, changed) in results)
+
+        print(corrected_sentence)
+        if not any_changed:
+            print("(no changes made)")
+        print(f"[latency: {latency_ms:.2f} ms]\n")
+
+
+if __name__ == "__main__":
+    run_cli()
