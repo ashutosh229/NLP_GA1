@@ -110,6 +110,65 @@ def evaluate_realword_accuracy(corrector, cases):
             correct += 1
     return correct / len(cases) if cases else 0.0
 
+
+# Part 4.3: Speed Demon Benchmark
+def build_speed_benchmark_batch(vocab, n=1000):
+    """
+    Build exactly `n` misspelled (non-word, ideally) words by sampling
+    real vocabulary words and applying one random edit each.
+    """
+    vocab_list = list(vocab)
+    batch = []
+    while len(batch) < n:
+        word = RNG.choice(vocab_list)
+        typo = random_single_edit(word, RNG)
+        batch.append(typo)
+    return batch
+
+
+def run_speed_demon_benchmark(vocab, deletes_dict, n=1000):
+    batch = build_speed_benchmark_batch(vocab, n)
+
+    t0 = time.perf_counter()
+    for w in batch:
+        method_a_candidates(w, vocab)
+    method_a_time = time.perf_counter() - t0
+
+    t0 = time.perf_counter()
+    for w in batch:
+        method_b_candidates(w, vocab, deletes_dict)
+    method_b_time = time.perf_counter() - t0
+
+    return method_a_time, method_b_time, len(batch)
+
+
+def print_speed_conclusion(method_a_time, method_b_time, n):
+    speedup = method_a_time / method_b_time if method_b_time > 0 else float("inf")
+    print(f"\n[Speed Demon Benchmark] batch size = {n}")
+    print(f"  Method A (standard edit-distance-1 generation): {method_a_time:.4f}s "
+          f"({method_a_time / n * 1000:.4f} ms/word)")
+    print(f"  Method B (symmetric delete):                    {method_b_time:.4f}s "
+          f"({method_b_time / n * 1000:.4f} ms/word)")
+    print(f"  Method B is ~{speedup:.1f}x faster than Method A.\n")
+    print(
+        "Conclusion: Method A must, for every word of length L, build and\n"
+        "hash roughly 54*L + 25 candidate STRINGS (deletions, transpositions,\n"
+        "26 substitutions per position, 26 insertions per position+1), then\n"
+        "test EACH one for vocabulary membership. The cost scales with the\n"
+        "size of the alphabet (26) and is paid fresh for every single query.\n"
+        "Method B never touches the alphabet at query time: it only computes\n"
+        "the L one-character deletions of the query word and performs L\n"
+        "dictionary lookups against a hash map that was already built once\n"
+        "up front (build_deletes_dict, paid a single time during model\n"
+        "preparation, not per query). Because L << 54*L + 25, and because\n"
+        "the expensive alphabet-driven string generation has been moved\n"
+        "entirely out of the per-query hot path, Method B achieves its\n"
+        "large constant-factor speedup — it trades a one-time O(V*avg_len)\n"
+        "preprocessing cost for an O(L) lookup cost per query, versus\n"
+        "Method A's O(26*L) generation cost paid every single time."
+    )
+
+
 # Entry point
 def main():
     ensure_brown_downloaded()
@@ -136,6 +195,10 @@ def main():
 
     print(f"\n[Accuracy] Non-word error correction:  {nonword_acc:.2%}")
     print(f"[Accuracy] Real-word error correction: {realword_acc:.2%}")
+
+    print("\n[evaluate] Running Speed Demon Benchmark (n=1000) ...")
+    a_time, b_time, n = run_speed_demon_benchmark(model["vocab"], model["deletes_dict"], n=1000)
+    print_speed_conclusion(a_time, b_time, n)
 
 
 if __name__ == "__main__":
