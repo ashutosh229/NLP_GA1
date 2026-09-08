@@ -130,10 +130,10 @@ def brown_tag_to_morph(word: str, raw_tag: str) -> str:
     
     # Pronouns
     if base_upos == 'PRON':
-        if 'PPS' in tag_clean:
-            return 'PRON-3Sing'
         if 'PPSS' in tag_clean or 'PPLS' in tag_clean:
             return 'PRON-Plur'
+        if 'PPS' in tag_clean:
+            return 'PRON-3Sing'
         if 'PP$' in tag_clean or 'PP$$' in tag_clean:
             return 'PRON-Poss'
         return 'PRON-General'
@@ -167,9 +167,9 @@ def load_english_brown(split_ratio: float = 0.8, seed: int = 42) -> Tuple[List[L
             w = word.strip().lower()
             if not w or not w.isalnum():
                 continue
-            upos = map_brown_tag_universal(raw_tag)
+            ptb_tag = map_brown_tag_ptb(raw_tag)
             morph_tag = brown_tag_to_morph(w, raw_tag)
-            cleaned_sent.append((w, upos, morph_tag))
+            cleaned_sent.append((w, ptb_tag, morph_tag))
         if len(cleaned_sent) >= 3:
             cleaned_sents.append(cleaned_sent)
 

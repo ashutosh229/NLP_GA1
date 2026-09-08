@@ -37,6 +37,17 @@ except ImportError:
     HAS_TABULATE = False
 
 
+def _format_table(rows, headers):
+    """Simple table formatter when tabulate is not available."""
+    if HAS_TABULATE:
+        return tabulate(rows, headers=headers, tablefmt="github")
+    out = "| " + " | ".join(headers) + " |\n"
+    out += "| " + " | ".join(["---"] * len(headers)) + " |\n"
+    for r in rows:
+        out += "| " + " | ".join(str(c) for c in r) + " |\n"
+    return out
+
+
 SAMPLE_TEST_STRINGS = {
     "Spanish": [
         ("mispadrespuedenviajar", "mis padres pueden viajar"),
@@ -99,7 +110,7 @@ def run_language_experiment(lang_name: str, train_sents: List, test_sents: List,
         ["Baseline: Greedy Longest-Match", f"{greedy_seg_results['precision']:.2f}%", f"{greedy_seg_results['recall']:.2f}%", f"{greedy_seg_results['f1']:.2f}%", f"{greedy_seg_results['sentence_acc']:.2f}%", f"{greedy_seg_time:.2f}s"]
     ]
     headers_seg = ["Model", "Precision", "Recall", "Word F1", "Exact Sent Acc", "Time"]
-    print(tabulate(seg_table, headers=headers_seg, tablefmt="github") if HAS_TABULATE else seg_table)
+    print(_format_table(seg_table, headers_seg))
 
     # 2. Evaluate Gold-Segmented POS Tagging (Standard & Morphology)
     print("\n--- 2. POS Tagging Accuracy (Gold Segmented Words) ---")
@@ -119,7 +130,7 @@ def run_language_experiment(lang_name: str, train_sents: List, test_sents: List,
         ["Morph-Aware: Baseline MFT", f"{base_morph_res['accuracy']:.2f}%", f"{base_morph_res['correct_tokens']:,}/{base_morph_res['total_tokens']:,}"]
     ]
     headers_pos = ["Model / Tagset", "Tagging Accuracy", "Correct / Total Tokens"]
-    print(tabulate(pos_table, headers=headers_pos, tablefmt="github") if HAS_TABULATE else pos_table)
+    print(_format_table(pos_table, headers_pos))
 
     # 3. End-to-End Pipeline & Error-Source Breakdown (Part 5)
     print("\n--- 3. End-to-End Pipeline & Error-Source Breakdown ---")
@@ -136,7 +147,7 @@ def run_language_experiment(lang_name: str, train_sents: List, test_sents: List,
         ["Baseline Pipeline (Morph-Aware)", f"{e2e_base_morph['pipeline_accuracy']:.2f}%", f"{e2e_base_morph['total_pipeline_errors']:,}", f"{e2e_base_morph['seg_induced_errors']:,} ({e2e_base_morph['seg_error_pct']:.1f}%)", f"{e2e_base_morph['genuine_tagging_errors']:,} ({e2e_base_morph['genuine_error_pct']:.1f}%)"]
     ]
     headers_e2e = ["Pipeline Configuration", "Pipeline Acc", "Total Errors", "Seg-Induced Errors (% of errs)", "Genuine Tagging Errors (% of errs)"]
-    print(tabulate(e2e_table, headers=headers_e2e, tablefmt="github") if HAS_TABULATE else e2e_table)
+    print(_format_table(e2e_table, headers_e2e))
 
     # 4. Confusion Matrix Analysis (Top 8 Confusions)
     print("\n--- 4. Top Confused Tag Pairs (Standard POS) ---")
@@ -193,7 +204,9 @@ def main():
     if args.lang in ("spanish", "both"):
         print("\n[*] Loading Spanish UD-GSD Corpus...")
         es_train, es_dev, es_test = load_spanish_ud()
-        results["Spanish"] = run_language_experiment("Spanish", es_train, es_test, eval_limit=args.eval_limit)
+        # Use dev set for tuning: merge into training data for final evaluation
+        es_train_full = es_train + es_dev
+        results["Spanish"] = run_language_experiment("Spanish", es_train_full, es_test, eval_limit=args.eval_limit)
 
     if args.interactive:
         print_section("INTERACTIVE MODE")

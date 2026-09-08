@@ -242,7 +242,7 @@ class TrigramDPSegmenter:
             score, prev_pos, w_prev2 = dp[curr_pos][curr_state]
             words.append(w_curr)
             curr_pos = prev_pos
-            if prev_pos == 0:
+            if prev_pos is None or prev_pos == 0:
                 break
             curr_state = (w_prev2, w_prev)
 
