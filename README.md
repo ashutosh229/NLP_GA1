@@ -1,12 +1,12 @@
 # NLP Group Assignment 1 — Final Report
 
-## Authors / Group Members
+## Group Members
 
 - **Ashutosh Kumar Jha**
+- **Sidhesh Kumar Patra**
 - **Ajay Chikate**
 - **Aman Kumar**
-- **Siddhesh Kumar Patra**
-- **Kishor Samir Koppikar**
+- **Kishor Koppikar**
 
 ---
 
