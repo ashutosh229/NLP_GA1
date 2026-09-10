@@ -1,7 +1,30 @@
 # NLP Group Assignment 1 — Final Report
 
-**Authors / Group Members:** NLP Group Assignment Team
-**Scope:** Four integrated NLP systems spanning word segmentation, POS tagging, dependency parsing, spelling correction, and a live constituency-aware editor.
+# NLP Group Assignment
+
+## Authors / Group Members
+
+- **Ashutosh Kumar Jha**
+- **Ajay Chikate**
+- **Aman Kumar**
+- **Siddhesh Kumar Patra**
+- **Kishor Samir Koppikar**
+
+---
+
+## Scope
+
+This project consists of **four integrated Natural Language Processing (NLP) systems** spanning multiple fundamental NLP tasks, including:
+
+- Word Segmentation
+- Part-of-Speech (POS) Tagging
+- Dependency Parsing
+- Spelling Correction
+- A Live Constituency-Aware Editor
+
+The systems are designed to demonstrate practical implementations of different NLP techniques and their integration into interactive and functional applications.
+
+---
 
 ---
 
