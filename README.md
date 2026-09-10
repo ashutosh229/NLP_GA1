@@ -1,7 +1,5 @@
 # NLP Group Assignment 1 — Final Report
 
-# NLP Group Assignment
-
 ## Authors / Group Members
 
 - **Ashutosh Kumar Jha**
